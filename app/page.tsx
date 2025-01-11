@@ -142,10 +142,10 @@ export default function Home() {
                 Ready to Get Started?
               </h2>
               <p className="text-xl mb-8 text-foreground/80">
-                Join TrendChat today and start making smarter, data-driven
-                decisions for your business.
+                Join SynthesisAI today and start making smarter, data-driven
+                decisions for your research.
               </p>
-              <Link href="/sign-up" passHref>
+              <Link href="/register" passHref>
                 <Button className="cyberpunk-button px-6 py-3 rounded-full text-lg hover:bg-primary/80 transition duration-300">
                   Start Your Free Trial
                 </Button>

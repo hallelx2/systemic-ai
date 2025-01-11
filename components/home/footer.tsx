@@ -107,7 +107,7 @@ export function Footer() {
         </div>
         <div className="mt-12 border-t pt-8">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} TrendChat. All rights reserved.
+            © {new Date().getFullYear()} SynthesisAI. All rights reserved.
           </p>
         </div>
       </div>
