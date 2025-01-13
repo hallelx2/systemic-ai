@@ -1,22 +1,84 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Brain } from "lucide-react";
+import { z } from "zod";
+import { useToast } from "@/hooks/use-toast"
+
+
+// Define a Zod schema for validation
+const signupSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const router = useRouter();
+  const { toast } = useToast()
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setIsLoading(true);
 
-    setTimeout(() => {
+    // Validate the form using Zod
+    const result = signupSchema.safeParse(form);
+    if (!result.success) {
+      result.error.errors.forEach((err) => {
+        toast({
+          title: "Validation Error",
+          description: err.message,
+          variant: "destructive", // Optional: Customize the style
+        });
+      });
       setIsLoading(false);
-    }, 3000);
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "Account created successfully!",
+        });
+        router.push("/login"); // Redirect to login page
+      } else {
+        toast({
+          title: "Signup Failed",
+          description: result.error || "Something went wrong.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred during signup. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { id, value } = e.target;
+    setForm((prev) => ({ ...prev, [id]: value }));
   }
 
   return (
@@ -39,6 +101,8 @@ export default function RegisterPage() {
               placeholder="John Doe"
               type="text"
               disabled={isLoading}
+              value={form.name}
+              onChange={handleChange}
             />
           </div>
           <div className="space-y-2">
@@ -51,11 +115,19 @@ export default function RegisterPage() {
               autoComplete="email"
               autoCorrect="off"
               disabled={isLoading}
+              value={form.email}
+              onChange={handleChange}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" disabled={isLoading} />
+            <Input
+              id="password"
+              type="password"
+              disabled={isLoading}
+              value={form.password}
+              onChange={handleChange}
+            />
           </div>
           <Button className="w-full" type="submit" disabled={isLoading}>
             {isLoading ? "Creating account..." : "Create Account"}

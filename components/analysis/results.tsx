@@ -5,15 +5,19 @@ import { Button } from "@/components/ui/button";
 import { FileText, MessageSquare } from "lucide-react";
 import Link from "next/link";
 
+interface ResponseSchema {
+  section_title: string;
+  section_content: string;
+}
+
 interface AnalysisResultsProps {
-  analysis: {
-    summary: string;
-    findings: string[];
-    recommendations: string[];
-  };
+  analysis: ResponseSchema[] | null; // analysis can be null or an array
 }
 
 export function AnalysisResults({ analysis }: AnalysisResultsProps) {
+  // Fallback to an empty array if analysis is null or undefined
+  const safeAnalysis = Array.isArray(analysis) ? analysis : [];
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -33,40 +37,12 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
       </div>
 
       <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>{analysis.summary}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Key Findings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc pl-6 space-y-2">
-              {analysis.findings.map((finding, index) => (
-                <li key={index}>{finding}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recommendations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc pl-6 space-y-2">
-              {analysis.recommendations.map((rec, index) => (
-                <li key={index}>{rec}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        {safeAnalysis.map((section, index) => (
+          <div key={index} className="space-y-4">
+            <div className="font-bold text-xl">{section.section_title}</div>
+            <div className="text-md">{section.section_content}</div>
+          </div>
+        ))}
       </div>
     </div>
   );

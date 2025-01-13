@@ -6,22 +6,51 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
+// Define the ReviewType as a TypeScript enum-like object
+export const ReviewType = {
+  QuickReview: "quick",
+  DetailedReport: "report",
+  SystematicReview: "systematic",
+  TechnicalGuide: "technical",
+  Tutorial: "tutorial",
+} as const;
+
+type ReviewTypeKey = keyof typeof ReviewType;
+type ReviewTypeValue = typeof ReviewType[ReviewTypeKey];
+
+const REVIEW_TYPES: { id: ReviewTypeValue; label: string }[] = [
+  { id: ReviewType.QuickReview, label: "Quick Review" },
+  { id: ReviewType.DetailedReport, label: "Detailed Report" },
+  { id: ReviewType.SystematicReview, label: "Systematic Review" },
+  { id: ReviewType.TechnicalGuide, label: "Technical Guide" },
+  { id: ReviewType.Tutorial, label: "Tutorial" },
+];
+
 interface ReviewOptionsStepProps {
-  onNext: (data: any) => void;
+  onNext: (data: ReviewTypeValue[]) => void;
   onBack: () => void;
 }
 
 export function ReviewOptionsStep({ onNext, onBack }: ReviewOptionsStepProps) {
-  const [options, setOptions] = useState({
-    systematicReview: false,
-    metaAnalysis: false,
-    literatureReview: false,
-    quickSummary: false,
-  });
+  const [selectedOptions, setSelectedOptions] = useState<Set<ReviewTypeValue>>(
+    new Set()
+  );
+
+  const toggleOption = (option: ReviewTypeValue) => {
+    setSelectedOptions((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(option)) {
+        newSet.delete(option);
+      } else {
+        newSet.add(option);
+      }
+      return newSet;
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onNext(options);
+    onNext(Array.from(selectedOptions));
   };
 
   return (
@@ -32,61 +61,16 @@ export function ReviewOptionsStep({ onNext, onBack }: ReviewOptionsStepProps) {
             <Label className="text-lg font-semibold">Review Type</Label>
 
             <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="systematic"
-                  checked={options.systematicReview}
-                  onCheckedChange={(checked) =>
-                    setOptions((prev) => ({
-                      ...prev,
-                      systematicReview: checked as boolean,
-                    }))
-                  }
-                />
-                <Label htmlFor="systematic">Systematic Review</Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="meta"
-                  checked={options.metaAnalysis}
-                  onCheckedChange={(checked) =>
-                    setOptions((prev) => ({
-                      ...prev,
-                      metaAnalysis: checked as boolean,
-                    }))
-                  }
-                />
-                <Label htmlFor="meta">Meta-Analysis</Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="literature"
-                  checked={options.literatureReview}
-                  onCheckedChange={(checked) =>
-                    setOptions((prev) => ({
-                      ...prev,
-                      literatureReview: checked as boolean,
-                    }))
-                  }
-                />
-                <Label htmlFor="literature">Literature Review</Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="quick"
-                  checked={options.quickSummary}
-                  onCheckedChange={(checked) =>
-                    setOptions((prev) => ({
-                      ...prev,
-                      quickSummary: checked as boolean,
-                    }))
-                  }
-                />
-                <Label htmlFor="quick">Quick Summary</Label>
-              </div>
+              {REVIEW_TYPES.map((type) => (
+                <div key={type.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={type.id}
+                    checked={selectedOptions.has(type.id)}
+                    onCheckedChange={() => toggleOption(type.id)}
+                  />
+                  <Label htmlFor={type.id}>{type.label}</Label>
+                </div>
+              ))}
             </div>
           </div>
 

@@ -15,6 +15,8 @@ import {
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import {useRouter} from "next/navigation";
 
 const sidebarItems = [
   {
@@ -27,16 +29,16 @@ const sidebarItems = [
     icon: BookOpen,
     href: "/dashboard/reviews",
   },
-  {
-    title: "Library",
-    icon: FileText,
-    href: "/dashboard/library",
-  },
-  {
-    title: "Chat",
-    icon: MessageSquare,
-    href: "/dashboard/chat",
-  },
+//   {
+//     title: "Library",
+//     icon: FileText,
+//     href: "/dashboard/library",
+//   },
+//   {
+//     title: "Chat",
+//     icon: MessageSquare,
+//     href: "/dashboard/chat",
+//   },
   {
     title: "Analysis",
     icon: BarChart,
@@ -52,11 +54,35 @@ const sidebarItems = [
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const { toast } = useToast()
+  const router = useRouter();
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    console.log("Logging out...");
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        toast({
+            title: "Logged out",
+            description:"You have been succesfully logged out. Login to continue.",
+          })
+        router.push('/login');
+        router.refresh(); // Refresh to update auth state
+      } else {
+        throw new Error('Logout failed');
+      }
+    } catch (error) {
+        toast({
+            title: "Logout Failed",
+            description: "Something went wrong.",
+            variant: "destructive",
+          })
+    }
   };
+
 
   return (
     <div
