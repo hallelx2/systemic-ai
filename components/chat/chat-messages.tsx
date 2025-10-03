@@ -3,12 +3,17 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Brain } from "lucide-react";
 
-interface ChatMessagesProps {
-  chatId: string | null;
+interface Message {
+  role: string;
+  content: string;
 }
 
-export function ChatMessages({ chatId }: ChatMessagesProps) {
-  if (!chatId) {
+interface ChatMessagesProps {
+  messages: Message[];
+}
+
+export function ChatMessages({ messages }: ChatMessagesProps) {
+  if (!messages || messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center text-muted-foreground">
         <div className="flex flex-col items-center gap-2">
@@ -19,23 +24,12 @@ export function ChatMessages({ chatId }: ChatMessagesProps) {
     );
   }
 
-  // Mock messages data
-  const messages = [
-    { id: 1, role: "user", content: "Can you analyze the results?" },
-    {
-      id: 2,
-      role: "assistant",
-      content:
-        "Based on the research results, I can identify several key patterns...",
-    },
-  ];
-
   return (
     <ScrollArea className="flex-1 p-4">
       <div className="space-y-4">
-        {messages.map((message) => (
+        {messages.map((message, index) => (
           <div
-            key={message.id}
+            key={index}
             className={`flex ${
               message.role === "user" ? "justify-end" : "justify-start"
             }`}

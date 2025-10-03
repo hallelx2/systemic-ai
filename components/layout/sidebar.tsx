@@ -15,8 +15,9 @@ import {
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { signOut } from "@/lib/auth-client";
 
 const sidebarItems = [
   {
@@ -54,32 +55,44 @@ const sidebarItems = [
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
-  const { toast } = useToast()
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+    setIsLoading(true);
+    const loadingToast = toast.loading("Signing out...");
 
-      if (response.ok) {
-        toast({
-            title: "Logged out",
-            description:"You have been succesfully logged out. Login to continue.",
-          })
-        router.push('/login');
-        router.refresh(); // Refresh to update auth state
-      } else {
-        throw new Error('Logout failed');
-      }
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.dismiss(loadingToast);
+            toast.success("Signed out successfully", {
+              description: "You've been logged out. See you next time!",
+              duration: 2000,
+            });
+            setTimeout(() => {
+              router.push('/login');
+              router.refresh();
+            }, 500);
+          },
+          onError: () => {
+            toast.dismiss(loadingToast);
+            toast.error("Logout failed", {
+              description: "Something went wrong. Please try again.",
+              duration: 3000,
+            });
+            setIsLoading(false);
+          },
+        },
+      });
     } catch (error) {
-        toast({
-            title: "Logout Failed",
-            description: "Something went wrong.",
-            variant: "destructive",
-          })
+      toast.dismiss(loadingToast);
+      toast.error("Something went wrong", {
+        description: "Unable to sign out. Please try again.",
+        duration: 3000,
+      });
+      setIsLoading(false);
     }
   };
 
@@ -133,13 +146,14 @@ export function Sidebar() {
       <div className="border-t p-2">
         <button
           onClick={handleLogout}
+          disabled={isLoading}
           className={cn(
-            "w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-destructive/10 text-destructive",
+            "w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-destructive/10 text-destructive disabled:opacity-50 disabled:cursor-not-allowed",
             collapsed && "justify-center",
           )}
         >
           <LogOut className="h-4 w-4" />
-          {!collapsed && <span>Logout</span>}
+          {!collapsed && <span>{isLoading ? "Signing out..." : "Logout"}</span>}
         </button>
       </div>
     </div>

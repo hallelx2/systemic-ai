@@ -5,7 +5,6 @@ import { ResearchInputStep } from "./steps/research-input";
 import { ReviewOptionsStep } from "./steps/review-options";
 import { AnalysisOptionsStep } from "./steps/analysis-options";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 
 interface ResearchWizardProps {
   onComplete: (data: any) => void;
@@ -44,7 +43,12 @@ export function ResearchWizard({ onComplete, onClose }: ResearchWizardProps) {
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Research Setup</CardTitle>
-        <Progress value={(step / 3) * 100} className="mt-2" />
+        <div className="mt-2 w-full bg-secondary rounded-full h-2">
+          <div 
+            className="bg-primary h-2 rounded-full transition-all" 
+            style={{ width: `${(step / 3) * 100}%` }}
+          />
+        </div>
       </CardHeader>
       <CardContent>
         {step === 1 && <ResearchInputStep onNext={handleStepComplete} />}

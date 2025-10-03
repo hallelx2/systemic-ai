@@ -6,21 +6,19 @@ import { SendHorizontal } from "lucide-react";
 import { Input } from "../ui/input";
 
 interface ChatInputProps {
-  chatId: string | null;
+  onSendMessage: (message: string) => void;
 }
 
-export function ChatInput({ chatId }: ChatInputProps) {
+export function ChatInput({ onSendMessage }: ChatInputProps) {
   const [message, setMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !chatId) return;
+    if (!message.trim()) return;
 
-    // TODO: Implement message sending
+    onSendMessage(message);
     setMessage("");
   };
-
-  if (!chatId) return null;
 
   return (
     <form onSubmit={handleSubmit} className="p-4 border-t">

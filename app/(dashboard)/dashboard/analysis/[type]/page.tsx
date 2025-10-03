@@ -3,7 +3,6 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Brain } from "lucide-react";
 import { AnalysisResults } from "@/components/analysis/results";
 
@@ -111,7 +110,12 @@ export default function AnalysisPage() {
           <div className="flex flex-col items-center space-y-4">
             <Brain className="h-12 w-12 animate-pulse text-primary" />
             <CardTitle>Analyzing Research</CardTitle>
-            <Progress value={progress} className="w-full max-w-xs" />
+            <div className="w-full max-w-xs bg-secondary rounded-full h-4">
+              <div 
+                className="bg-primary h-4 rounded-full transition-all" 
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

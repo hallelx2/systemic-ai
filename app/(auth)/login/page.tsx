@@ -6,93 +6,57 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Brain } from "lucide-react";
 import Link from "next/link";
-import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
-import { z } from "zod";
 import { toast } from "sonner";
+import { signIn } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
-
-  const validateForm = (): boolean => {
-    try {
-      loginSchema.parse({ email, password });
-      setErrors({});
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const formattedErrors: Partial<Record<keyof LoginFormData, string>> = {};
-        error.errors.forEach((err) => {
-          if (err.path[0]) {
-            formattedErrors[err.path[0] as keyof LoginFormData] = err.message;
-          }
-        });
-        setErrors(formattedErrors);
-        // Show validation error toast
-        toast.error("Please check your input", {
-          description: error.errors[0].message,
-          duration: 3000,
-        });
-      }
-      return false;
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validate form before submission
-    if (!validateForm()) {
+    
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
       return;
     }
 
-    // Show loading toast
-    const loadingToast = toast.loading("Signing in...");
     setIsLoading(true);
+    const loadingToast = toast.loading("Signing in...");
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      await signIn.email({
+        email,
+        password,
+      }, {
+        onSuccess: () => {
+          toast.dismiss(loadingToast);
+          toast.success("Welcome back!", {
+            description: "You've been successfully signed in.",
+            duration: 2000,
+          });
+          setTimeout(() => {
+            router.push('/dashboard');
+            router.refresh();
+          }, 500);
         },
-        body: JSON.stringify({ email, password }),
+        onError: (ctx) => {
+          toast.dismiss(loadingToast);
+          toast.error("Login failed", {
+            description: ctx.error.message || "Invalid email or password. Please try again.",
+            duration: 4000,
+          });
+          setIsLoading(false);
+        },
       });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Dismiss loading toast and show success
-        toast.dismiss(loadingToast);
-        toast.success("Welcome back!", {
-          description: "You've been successfully signed in.",
-          duration: 2000,
-        });
-
-        // Small delay to show the success message before redirect
-        setTimeout(() => {
-          router.push('/dashboard');
-          router.refresh();
-        }, 500);
-      } else {
-        // Dismiss loading toast and show error
-        toast.dismiss(loadingToast);
-        toast.error("Login failed", {
-          description: data.error || "Please check your credentials and try again.",
-          duration: 4000,
-        });
-      }
-    } catch (err) {
-      // Dismiss loading toast and show error
+    } catch (error) {
       toast.dismiss(loadingToast);
       toast.error("Something went wrong", {
-        description: "Please try again later.",
+        description: "An unexpected error occurred. Please try again.",
         duration: 4000,
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -112,19 +76,10 @@ export default function LoginPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (errors.email) {
-                  setErrors({ ...errors, email: undefined });
-                }
-              }}
-              className={errors.email ? "border-red-500" : ""}
+              onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isLoading}
             />
-            {errors.email && (
-              <p className="text-sm text-red-500 mt-1">{errors.email}</p>
-            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -132,19 +87,10 @@ export default function LoginPage() {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (errors.password) {
-                  setErrors({ ...errors, password: undefined });
-                }
-              }}
-              className={errors.password ? "border-red-500" : ""}
+              onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLoading}
             />
-            {errors.password && (
-              <p className="text-sm text-red-500 mt-1">{errors.password}</p>
-            )}
           </div>
           <Button
             type="submit"
