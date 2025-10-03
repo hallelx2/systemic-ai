@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { ChatMessages } from "@/components/chat/chat-messages";
 import { ChatInput } from "@/components/chat/chat-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain } from "lucide-react";
 
-export default function ChatPage({ params }: { params: { id: string } }) {
+export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [messages, setMessages] = useState<any[]>([]);
 
   const handleSendMessage = async (message: string) => {
@@ -26,7 +27,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     }, 1000);
   };
 
-  if (!params.id) {
+  if (!id) {
     return (
       <Card className="h-full">
         <CardContent className="flex items-center justify-center h-full">
