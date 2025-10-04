@@ -27,30 +27,34 @@ export default function LoginPage() {
     const loadingToast = toast.loading("Signing in...");
 
     try {
-      await signIn.email({
-        email,
-        password,
-      }, {
-        onSuccess: () => {
-          toast.dismiss(loadingToast);
-          toast.success("Welcome back!", {
-            description: "You've been successfully signed in.",
-            duration: 2000,
-          });
-          setTimeout(() => {
+      const result = await signIn.email(
+        {
+          email,
+          password,
+        },
+        {
+          onRequest: () => {
+            // Request is being sent
+          },
+          onSuccess: () => {
+            toast.dismiss(loadingToast);
+            toast.success("Welcome back!", {
+              description: "You've been successfully signed in.",
+              duration: 2000,
+            });
             router.push('/dashboard');
             router.refresh();
-          }, 500);
-        },
-        onError: (ctx) => {
-          toast.dismiss(loadingToast);
-          toast.error("Login failed", {
-            description: ctx.error.message || "Invalid email or password. Please try again.",
-            duration: 4000,
-          });
-          setIsLoading(false);
-        },
-      });
+          },
+          onError: (ctx) => {
+            toast.dismiss(loadingToast);
+            toast.error("Login failed", {
+              description: ctx.error.message || "Invalid email or password. Please try again.",
+              duration: 4000,
+            });
+            setIsLoading(false);
+          },
+        }
+      );
     } catch (error) {
       toast.dismiss(loadingToast);
       toast.error("Something went wrong", {

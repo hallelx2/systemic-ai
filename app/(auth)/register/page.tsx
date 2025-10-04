@@ -34,39 +34,40 @@ export default function RegisterPage() {
     const loadingToast = toast.loading("Creating your account...");
 
     try {
-      await signUp.email({
-        email: form.email,
-        password: form.password,
-        name: form.name,
-      }, {
-        onSuccess: () => {
-          toast.dismiss(loadingToast);
-          toast.success("Account created successfully!", {
-            description: "You can now sign in with your credentials.",
-            duration: 3000,
-          });
-          setTimeout(() => {
+      const result = await signUp.email(
+        {
+          email: form.email,
+          password: form.password,
+          name: form.name,
+        },
+        {
+          onSuccess: () => {
+            toast.dismiss(loadingToast);
+            toast.success("Account created successfully!", {
+              description: "You can now sign in with your credentials.",
+              duration: 3000,
+            });
             router.push("/login");
-          }, 1000);
-        },
-        onError: (ctx) => {
-          toast.dismiss(loadingToast);
-          const errorMessage = ctx.error.message || "Failed to create account";
-          
-          if (errorMessage.toLowerCase().includes("email")) {
-            toast.error("Email already exists", {
-              description: "This email is already registered. Try signing in instead.",
-              duration: 4000,
-            });
-          } else {
-            toast.error("Registration failed", {
-              description: errorMessage,
-              duration: 4000,
-            });
-          }
-          setIsLoading(false);
-        },
-      });
+          },
+          onError: (ctx) => {
+            toast.dismiss(loadingToast);
+            const errorMessage = ctx.error.message || "Failed to create account";
+            
+            if (errorMessage.toLowerCase().includes("email")) {
+              toast.error("Email already exists", {
+                description: "This email is already registered. Try signing in instead.",
+                duration: 4000,
+              });
+            } else {
+              toast.error("Registration failed", {
+                description: errorMessage,
+                duration: 4000,
+              });
+            }
+            setIsLoading(false);
+          },
+        }
+      );
     } catch (error) {
       toast.dismiss(loadingToast);
       toast.error("Something went wrong", {
